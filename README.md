@@ -3,10 +3,16 @@
 
 ## Content
 - [Overview](#overview)
+- [Run Streamlit UI](#run-streamlit-ui)
+    - [Stop Streamlit UI](#stop-streamlit-ui)
 
 ## Overview
 
-### Run Streamlit UI
+A Motor Roadside Assistance application that provides a platform for users to request assistance for their vehicles. The application is built using the following technologies:
+- Streamlit UI
+- Azure AI Service
+
+## Run Streamlit UI
 
 To isolate our Streamlit application dependencies and for ease of deployment, we use the setup-streamlit-env.sh shell script to create a virtual Python environment with the requirements installed.
 
