@@ -10,7 +10,7 @@
 
 A Motor Roadside Assistance application that provides a platform for users to request assistance for their vehicles. The application is built using the following technologies:
 - Streamlit UI
-- Azure AI Service
+- Azure AI Services
 
 ## Run Streamlit UI
 
@@ -43,4 +43,15 @@ streamlit run azure_agent_streamlit.py
 
 ```sh
 deactivate
+```
+
+## References
+
+- Streamlit documentation: [Streamlit documentation](https://docs.streamlit.io/)
+For more information on Streamlit, visit the [Streamlit documentation](https://docs.streamlit.io/).
+Information about building chatbot GUI via StreamLit, visit the [Streamlit Chatbot GUI documentation](https://docs.streamlit.io/develop/tutorials/llms/build-conversational-apps#build-a-simple-chatbot-gui-with-streaming).
+Gallery of Streamlit applications, visit the [Streamlit Gallery](https://streamlit.io/gallery?category=llms).
+
+And also, for more information on Azure AI Services, visit the [Azure AI Services documentation](https://docs.microsoft.com/en-us/azure/cognitive-services/).
+
 ```
