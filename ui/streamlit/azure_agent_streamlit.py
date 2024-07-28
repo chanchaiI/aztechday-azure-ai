@@ -1,7 +1,7 @@
 import streamlit as st
 import random
 import time
-
+from audiorecorder import audiorecorder
 
 # Streamed response emulator
 def response_generator():
@@ -41,3 +41,15 @@ if prompt := st.chat_input("What is up?"):
         response = st.write_stream(response_generator())
     # Add assistant response to chat history
     st.session_state.messages.append({"role": "assistant", "content": response})
+
+
+audio = audiorecorder("Click to record", "Click to stop recording")
+if len(audio) > 0:
+    # To play audio in frontend:
+    st.audio(audio.export().read())  
+
+    # To save audio to a file, use pydub export method:
+    audio.export("audio.wav", format="wav")
+
+    # To get audio properties, use pydub AudioSegment properties:
+    st.write(f"Frame rate: {audio.frame_rate}, Frame width: {audio.frame_width}, Duration: {audio.duration_seconds} seconds") 
