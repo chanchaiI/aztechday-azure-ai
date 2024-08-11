@@ -18,7 +18,7 @@ deployment = os.getenv("AZURE_AI_DEPLOYMENT_NAME", "")
 search_endpoint = os.getenv("AZURE_SEARCH_ENDPOINT", "")
 search_key = os.getenv("AZURE_SEARCH_KEY", "")
 embedding_endpoint = os.getenv("AZURE_AI_EMBEDDING_ENDPOINT", "")
-embedding_key = os.getenv("AZURE_EMBEDDING_KEY", "")
+embedding_key = os.getenv("AZURE_AI_EMBEDDING_KEY", "")
 
 token_provider = get_bearer_token_provider(
     DefaultAzureCredential(),
