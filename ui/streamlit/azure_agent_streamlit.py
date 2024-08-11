@@ -13,20 +13,17 @@ speech_config = speechsdk.SpeechConfig(subscription=speech_key, region=service_r
 speech_config.speech_synthesis_voice_name = "en-US-AmberNeural"
 speech_synthesizer = speechsdk.SpeechSynthesizer(speech_config=speech_config)
 
-endpoint = os.getenv("AZURE_AI_ENDPOINT_URL", "")
+openaiEndpoint = os.getenv("AZURE_OPEN_AI_ENDPOINT_URL", "")
+openaiKey = os.getenv("AZURE_OPEN_AI_KEY", "")
 deployment = os.getenv("AZURE_AI_DEPLOYMENT_NAME", "")
 search_endpoint = os.getenv("AZURE_SEARCH_ENDPOINT", "")
 search_key = os.getenv("AZURE_SEARCH_KEY", "")
 embedding_endpoint = os.getenv("AZURE_AI_EMBEDDING_ENDPOINT", "")
 embedding_key = os.getenv("AZURE_AI_EMBEDDING_KEY", "")
 
-token_provider = get_bearer_token_provider(
-    DefaultAzureCredential(),
-    "https://cognitiveservices.azure.com/.default")
-
 client = AzureOpenAI(
-    azure_endpoint=endpoint,
-    azure_ad_token_provider=token_provider,
+    azure_endpoint=openaiEndpoint,
+    api_key=openaiKey,
     api_version="2024-05-01-preview",
 )
 
@@ -97,9 +94,9 @@ def response_generator(prompt):
                     "key": f"{embedding_key}"
                   }
                 },
-                "query_type": "vector_simple_hybrid",
+                "query_type": "vector",
                 "in_scope": True,
-                "role_information": "You are an AI assistant that helps people find information named Ava from ABCompany. ",
+                "role_information": "You are an AI assistant that helps people find information named Ava from ABCompany.",
                 "strictness": 3,
                 "top_n_documents": 5
               }
