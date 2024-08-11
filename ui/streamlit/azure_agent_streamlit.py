@@ -27,6 +27,10 @@ client = AzureOpenAI(
     api_version="2024-05-01-preview",
 )
 
+st.title("Simple chat")
+chat_history_container = st.container()
+chat_input_container = st.container()
+
 def textToSpeech(text):
     result = speech_synthesizer.speak_text_async(text).get()
     # Check result
@@ -37,26 +41,6 @@ def textToSpeech(text):
         print("Speech synthesis canceled: {}".format(cancellation_details.reason))
         if cancellation_details.reason == speechsdk.CancellationReason.Error:
             print("Error details: {}".format(cancellation_details.error_details))
-
-def recognize_from_microphone():
-    # audio_config = speechsdk.audio.AudioConfig(use_default_microphone=True)
-    audio_config = speechsdk.audio.AudioConfig(filename="audio.wav")
-    speech_recognizer = speechsdk.SpeechRecognizer(speech_config=speech_config, audio_config=audio_config)
-
-    print("Speak into your microphone.")
-    speech_recognition_result = speech_recognizer.recognize_once_async().get()
-
-    if speech_recognition_result.reason == speechsdk.ResultReason.RecognizedSpeech:
-        print("Recognized: {}".format(speech_recognition_result.text))
-        st.markdown(speech_recognition_result.text)
-    elif speech_recognition_result.reason == speechsdk.ResultReason.NoMatch:
-        print("No speech could be recognized: {}".format(speech_recognition_result.no_match_details))
-    elif speech_recognition_result.reason == speechsdk.ResultReason.Canceled:
-        cancellation_details = speech_recognition_result.cancellation_details
-        print("Speech Recognition canceled: {}".format(cancellation_details.reason))
-        if cancellation_details.reason == speechsdk.CancellationReason.Error:
-            print("Error details: {}".format(cancellation_details.error_details))
-            print("Did you set the speech resource key and region values?")
 
 # Streamed response emulator
 def response_generator(prompt):
@@ -114,63 +98,63 @@ def write_stream(text):
         time.sleep(0.05)
 
 def main():
-    st.title("Simple chat")
+    with chat_history_container:
+        if "messages" not in st.session_state:
+            st.session_state.messages = []
 
-    # Initialize chat history
-    if "messages" not in st.session_state:
-        st.session_state.messages = []
+        # Display chat messages from history on app rerun
+        for message in st.session_state.messages:
+            with st.chat_message(message["role"]):
+                st.markdown(message["content"])
 
-    # Display chat messages from history on app rerun
-    for message in st.session_state.messages:
-        with st.chat_message(message["role"]):
-            st.markdown(message["content"])
+    with chat_input_container:
+        col1, col2 = st.columns([4, 1])
+        with col1:
+            text_prompt = st.chat_input("What is up?")
 
-    col1, col2 = st.columns([4, 1])
-    with col1:
-        text_prompt = st.chat_input("What is up?")
+        with col2:
+            audio = audiorecorder("Record", "Stop")
 
-    with col2:
-        audio = audiorecorder("Record", "Stop")
+        if text_prompt:
+            submitPrompt(text_prompt)
+            
+        elif len(audio) > 0:
+            st.audio(audio.export().read())
+            audio.export("audio.wav", format="wav")
 
-    if text_prompt:
-        submitPrompt(text_prompt)
-        
-    elif len(audio) > 0:
-        st.audio(audio.export().read())
-        audio.export("audio.wav", format="wav")
+            audio_config = speechsdk.audio.AudioConfig(filename="audio.wav")
+            speech_recognizer = speechsdk.SpeechRecognizer(speech_config=speech_config, audio_config=audio_config)
+            speech_recognition_result = speech_recognizer.recognize_once_async().get()
 
-        audio_config = speechsdk.audio.AudioConfig(filename="audio.wav")
-        speech_recognizer = speechsdk.SpeechRecognizer(speech_config=speech_config, audio_config=audio_config)
-        speech_recognition_result = speech_recognizer.recognize_once_async().get()
+            if speech_recognition_result.reason == speechsdk.ResultReason.RecognizedSpeech:
+                prompt = speech_recognition_result.text
+                print("Recognized: {}".format(speech_recognition_result.text))
+                submitPrompt(prompt)
 
-        if speech_recognition_result.reason == speechsdk.ResultReason.RecognizedSpeech:
-            prompt = speech_recognition_result.text
-            print("Recognized: {}".format(speech_recognition_result.text))
-            submitPrompt(prompt)
-
-        elif speech_recognition_result.reason == speechsdk.ResultReason.NoMatch:
-            print("No speech could be recognized: {}".format(speech_recognition_result.no_match_details))
-        elif speech_recognition_result.reason == speechsdk.ResultReason.Canceled:
-            cancellation_details = speech_recognition_result.cancellation_details
-            print("Speech Recognition canceled: {}".format(cancellation_details.reason))
-            if cancellation_details.reason == speechsdk.CancellationReason.Error:
-                print("Error details: {}".format(cancellation_details.error_details))
-                print("Did you set the speech resource key and region values?")
+            elif speech_recognition_result.reason == speechsdk.ResultReason.NoMatch:
+                print("No speech could be recognized: {}".format(speech_recognition_result.no_match_details))
+            elif speech_recognition_result.reason == speechsdk.ResultReason.Canceled:
+                cancellation_details = speech_recognition_result.cancellation_details
+                print("Speech Recognition canceled: {}".format(cancellation_details.reason))
+                if cancellation_details.reason == speechsdk.CancellationReason.Error:
+                    print("Error details: {}".format(cancellation_details.error_details))
+                    print("Did you set the speech resource key and region values?")
 
 def submitPrompt(prompt):
-    st.session_state.messages.append({"role": "user", "content": prompt})
-    # Display user message in chat message container
-    with st.chat_message("user"):
-        st.markdown(prompt)
+    with chat_history_container:
+        st.session_state.messages.append({"role": "user", "content": prompt})
+        # Display user message in chat message container
+        with st.chat_message("user"):
+            st.markdown(prompt)
 
-    # Display assistant response in chat message container
-    with st.chat_message("assistant"):
-        chatResponse = response_generator(prompt)
-        Thread(target=textToSpeech, args=(chatResponse,)).start()
-        response = st.write_stream(write_stream(chatResponse))
+        # Display assistant response in chat message container
+        with st.chat_message("assistant"):
+            chatResponse = response_generator(prompt)
+            Thread(target=textToSpeech, args=(chatResponse,)).start()
+            response = st.write_stream(write_stream(chatResponse))
 
-    # Add assistant response to chat history
-    st.session_state.messages.append({"role": "assistant", "content": response})
+        # Add assistant response to chat history
+        st.session_state.messages.append({"role": "assistant", "content": response})
 
 main()
 
