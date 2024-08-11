@@ -78,7 +78,7 @@ def response_generator(prompt):
                     "key": f"{embedding_key}"
                   }
                 },
-                "query_type": "vector",
+                "query_type": "vector_simple_hybrid",
                 "in_scope": True,
                 "role_information": "You are an AI assistant that helps people find information named Ava from ABCompany.",
                 "strictness": 3,
@@ -95,7 +95,7 @@ def response_generator(prompt):
 def write_stream(text):
     for i in range(len(text)):
         yield text[i]
-        time.sleep(0.05)
+        time.sleep(0.03)
 
 def main():
     with chat_history_container:
