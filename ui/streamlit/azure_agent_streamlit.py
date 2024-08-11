@@ -1,6 +1,5 @@
 import os
 import streamlit as st
-import random
 import time
 from audiorecorder import audiorecorder
 import azure.cognitiveservices.speech as speechsdk
@@ -117,7 +116,6 @@ def write_stream(text):
         yield text[i]
         time.sleep(0.05)
 
-
 def main():
     st.title("Simple chat")
 
@@ -130,27 +128,13 @@ def main():
         with st.chat_message(message["role"]):
             st.markdown(message["content"])
 
-    # Accept user input
-    if prompt := st.chat_input("What is up?"):
-        # Add user message to chat history
-        st.session_state.messages.append({"role": "user", "content": prompt})
-        # Display user message in chat message container
-        with st.chat_message("user"):
-            st.markdown(prompt)
-
-        # Display assistant response in chat message container
-        with st.chat_message("assistant"):
-            chatResponse = response_generator(prompt)
-            Thread(target=textToSpeech, args=(chatResponse,)).start()
-            response = st.write_stream(write_stream(chatResponse))
-
-        # Add assistant response to chat history
-        st.session_state.messages.append({"role": "assistant", "content": response})
-
-
     audio = audiorecorder("Click to record", "Click to stop recording")
 
-    if len(audio) > 0:
+    # Accept user input
+    if prompt := st.chat_input("What is up?"):
+        submitPrompt(prompt)
+        
+    elif len(audio) > 0:
         st.audio(audio.export().read())
         audio.export("audio.wav", format="wav")
 
@@ -158,11 +142,10 @@ def main():
         speech_recognizer = speechsdk.SpeechRecognizer(speech_config=speech_config, audio_config=audio_config)
         speech_recognition_result = speech_recognizer.recognize_once_async().get()
 
-        # To get audio properties, use pydub AudioSegment properties:
-        # st.write(f"Frame rate: {audio.frame_rate}, Frame width: {audio.frame_width}, Duration: {audio.duration_seconds} seconds")
-
         if speech_recognition_result.reason == speechsdk.ResultReason.RecognizedSpeech:
+            prompt = speech_recognition_result.text
             print("Recognized: {}".format(speech_recognition_result.text))
+            submitPrompt(prompt)
 
         elif speech_recognition_result.reason == speechsdk.ResultReason.NoMatch:
             print("No speech could be recognized: {}".format(speech_recognition_result.no_match_details))
@@ -173,4 +156,21 @@ def main():
                 print("Error details: {}".format(cancellation_details.error_details))
                 print("Did you set the speech resource key and region values?")
 
+def submitPrompt(prompt):
+    st.session_state.messages.append({"role": "user", "content": prompt})
+    # Display user message in chat message container
+    with st.chat_message("user"):
+        st.markdown(prompt)
+
+    # Display assistant response in chat message container
+    with st.chat_message("assistant"):
+        chatResponse = response_generator(prompt)
+        Thread(target=textToSpeech, args=(chatResponse,)).start()
+        response = st.write_stream(write_stream(chatResponse))
+
+    # Add assistant response to chat history
+    st.session_state.messages.append({"role": "assistant", "content": response})
+
 main()
+
+
