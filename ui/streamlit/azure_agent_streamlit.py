@@ -1,13 +1,16 @@
+import os
 import streamlit as st
 import random
 import time
 from audiorecorder import audiorecorder
 import azure.cognitiveservices.speech as speechsdk
 
-speech_key = ''
-service_region = '' 
+speech_key = os.environ['AZURE_SPEECH_KEY']
+service_region = os.environ['AZURE_SERVICE_REGION']
+ 
 speech_config = speechsdk.SpeechConfig(subscription=speech_key, region=service_region)
 speech_config.speech_synthesis_voice_name = "en-US-BrianMultilingualNeural"
+speech_config.speech_recognition_language="en-US"
 speech_synthesizer = speechsdk.SpeechSynthesizer(speech_config=speech_config)
 
 def textToSpeech(text):
@@ -21,7 +24,25 @@ def textToSpeech(text):
         if cancellation_details.reason == speechsdk.CancellationReason.Error:
             print("Error details: {}".format(cancellation_details.error_details))
 
+def recognize_from_microphone():
+    # audio_config = speechsdk.audio.AudioConfig(use_default_microphone=True)
+    audio_config = speechsdk.audio.AudioConfig(filename="audio.wav")
+    speech_recognizer = speechsdk.SpeechRecognizer(speech_config=speech_config, audio_config=audio_config)
 
+    print("Speak into your microphone.")
+    speech_recognition_result = speech_recognizer.recognize_once_async().get()
+
+    if speech_recognition_result.reason == speechsdk.ResultReason.RecognizedSpeech:
+        print("Recognized: {}".format(speech_recognition_result.text))
+        st.markdown(speech_recognition_result.text)
+    elif speech_recognition_result.reason == speechsdk.ResultReason.NoMatch:
+        print("No speech could be recognized: {}".format(speech_recognition_result.no_match_details))
+    elif speech_recognition_result.reason == speechsdk.ResultReason.Canceled:
+        cancellation_details = speech_recognition_result.cancellation_details
+        print("Speech Recognition canceled: {}".format(cancellation_details.reason))
+        if cancellation_details.reason == speechsdk.CancellationReason.Error:
+            print("Error details: {}".format(cancellation_details.error_details))
+            print("Did you set the speech resource key and region values?")
 
 # Streamed response emulator
 def response_generator():
@@ -67,13 +88,26 @@ if prompt := st.chat_input("What is up?"):
 
 
 audio = audiorecorder("Click to record", "Click to stop recording")
-if len(audio) > 0:
-    # To play audio in frontend:
-    st.audio(audio.export().read())  
 
-    # To save audio to a file, use pydub export method:
+if len(audio) > 0:
+    st.audio(audio.export().read())  
     audio.export("audio.wav", format="wav")
 
-    # To get audio properties, use pydub AudioSegment properties:
-    st.write(f"Frame rate: {audio.frame_rate}, Frame width: {audio.frame_width}, Duration: {audio.duration_seconds} seconds") 
+    audio_config = speechsdk.audio.AudioConfig(filename="audio.wav")
+    speech_recognizer = speechsdk.SpeechRecognizer(speech_config=speech_config, audio_config=audio_config)
+    speech_recognition_result = speech_recognizer.recognize_once_async().get()
 
+    # To get audio properties, use pydub AudioSegment properties:
+    # st.write(f"Frame rate: {audio.frame_rate}, Frame width: {audio.frame_width}, Duration: {audio.duration_seconds} seconds") 
+
+    if speech_recognition_result.reason == speechsdk.ResultReason.RecognizedSpeech:
+        print("Recognized: {}".format(speech_recognition_result.text))
+        
+    elif speech_recognition_result.reason == speechsdk.ResultReason.NoMatch:
+        print("No speech could be recognized: {}".format(speech_recognition_result.no_match_details))
+    elif speech_recognition_result.reason == speechsdk.ResultReason.Canceled:
+        cancellation_details = speech_recognition_result.cancellation_details
+        print("Speech Recognition canceled: {}".format(cancellation_details.reason))
+        if cancellation_details.reason == speechsdk.CancellationReason.Error:
+            print("Error details: {}".format(cancellation_details.error_details))
+            print("Did you set the speech resource key and region values?")
