@@ -128,11 +128,15 @@ def main():
         with st.chat_message(message["role"]):
             st.markdown(message["content"])
 
-    audio = audiorecorder("Click to record", "Click to stop recording")
+    col1, col2 = st.columns([4, 1])
+    with col1:
+        text_prompt = st.chat_input("What is up?")
 
-    # Accept user input
-    if prompt := st.chat_input("What is up?"):
-        submitPrompt(prompt)
+    with col2:
+        audio = audiorecorder("Record", "Stop")
+
+    if text_prompt:
+        submitPrompt(text_prompt)
         
     elif len(audio) > 0:
         st.audio(audio.export().read())
