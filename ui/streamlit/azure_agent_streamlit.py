@@ -23,7 +23,7 @@ embedding_key = os.getenv("AZURE_AI_EMBEDDING_KEY", "")
 
 client = AzureOpenAI(
     azure_endpoint=openaiEndpoint,
-    api_key= openaiKey,
+    api_key=openaiKey,
     api_version="2024-05-01-preview",
 )
 
