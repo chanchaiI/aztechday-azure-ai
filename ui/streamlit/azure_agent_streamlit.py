@@ -27,7 +27,7 @@ client = AzureOpenAI(
     api_version="2024-05-01-preview",
 )
 
-st.title("Simple chat")
+st.title("AB company Chatbot")
 chat_history_container = st.container()
 chat_input_container = st.container()
 
@@ -80,7 +80,7 @@ def response_generator(prompt):
                 },
                 "query_type": "vector_simple_hybrid",
                 "in_scope": True,
-                "role_information": "You are an AI assistant that helps people find information named Ava from ABCompany.",
+                "role_information": "You will be acting as a helpful customer service representative named Ava from ABCompany. Provide a summarized answer using only 1 to 3 sentences.",
                 "strictness": 3,
                 "top_n_documents": 5
               }
