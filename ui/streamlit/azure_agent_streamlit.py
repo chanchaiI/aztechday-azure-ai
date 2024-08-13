@@ -80,7 +80,7 @@ def response_generator(prompt):
                 },
                 "query_type": "vector_simple_hybrid",
                 "in_scope": True,
-                "role_information": "You will be acting as a helpful customer service representative named Ava from ABCompany. Provide a summarized answer using only 1 to 3 sentences.",
+                "role_information": "You are a helpful customer service representative named Ava from ABCompany. Provide a summarized answer using only 1 to 3 sentences.",
                 "strictness": 3,
                 "top_n_documents": 5
               }
