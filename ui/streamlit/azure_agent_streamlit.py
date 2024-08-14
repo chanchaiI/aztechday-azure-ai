@@ -4,7 +4,6 @@ import time
 from audiorecorder import audiorecorder
 import azure.cognitiveservices.speech as speechsdk
 from openai import AzureOpenAI
-from azure.identity import DefaultAzureCredential, get_bearer_token_provider
 from threading import Thread
 
 speech_key = os.getenv("AZURE_SPEECH_KEY", "")
