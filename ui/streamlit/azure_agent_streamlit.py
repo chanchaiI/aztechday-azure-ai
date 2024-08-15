@@ -26,7 +26,7 @@ client = AzureOpenAI(
     api_version="2024-05-01-preview",
 )
 
-st.title("AB company Chatbot")
+st.title("AB Company")
 chat_history_container = st.container()
 chat_input_container = st.container()
 
@@ -63,7 +63,7 @@ def response_generator(prompt):
               "parameters": {
                 "filter": None,
                 "endpoint": f"{search_endpoint}",
-                "index_name": "ai-build-techday-v1",
+                "index_name": "aztechday-index-v1",
                 "semantic_configuration": "azureml-default",
                 "authentication": {
                   "type": "api_key",
